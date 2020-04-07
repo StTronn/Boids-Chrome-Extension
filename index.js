@@ -27,7 +27,7 @@ class Boid {
     } else this.position = position;
     this.acceleration = new Victor(0, 0);
     this.maxForce = 0.4;
-    this.maxSpeed = 3;
+    this.maxSpeed = 3.5;
   }
 
   edges() {
@@ -118,6 +118,7 @@ class Boid {
     this.acceleration.add(alignment);
     this.acceleration.add(cohesion);
     this.acceleration.add(separation);
+
   }
 
   update() {
@@ -133,7 +134,7 @@ class Boid {
     ctx.fill();
   }
 }
-
+ 
 for (let i = 0; i < 80; i++) {
   let temp = new Boid();
   flocks.push(temp);
