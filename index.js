@@ -4,15 +4,18 @@ let ctx = canvas.getContext("2d");
 let WIDTH = canvas.width;
 let HEIGHT = canvas.height;
 
-let flocks=[];
+let flocks = [];
 
 class Boid {
   constructor(velocity = null, position = null) {
     if (velocity === null) {
-      let min = -4;
-      let max =-1;
-      let x = Math.floor(Math.random() * (max - min + 1) + min)+1;
-      let y = Math.floor(Math.random() * (max - min + 1) + min)+1;
+      let min = 2;
+      let max = 3;
+      let angle= Math.random()*2*Math.PI;
+      console.log(angle);
+      let x = Math.cos(angle);
+      let y = Math.sin(angle);
+
       this.velocity = new Victor(x, y);
     } else this.velocity = velocity;
 
@@ -22,56 +25,51 @@ class Boid {
       let y = Math.floor(Math.random() * (HEIGHT - min + 1) + min);
       this.position = new Victor(x, y);
     } else this.position = position;
-    this.acceleration = new Victor(0,0);
-    this.maxForce=1;
-    this.maxSpeed=4;
+    this.acceleration = new Victor(0, 0);
+    this.maxForce = 1;
+    this.maxSpeed = 1;
   }
 
-  edges (){
-    if (this.position.x>WIDTH)
-      this.position.x=0;
-    else if (this.position.x<0)
-      this.position.x=WIDTH;
-    
-    if (this.position.y>HEIGHT)
-      this.position.y=0;
-    else if (this.position.y<0)
-      this.position.y=HEIGHT;
+  edges() {
+    if (this.position.x > WIDTH) this.position.x = 0;
+    else if (this.position.x < 0) this.position.x = WIDTH;
+
+    if (this.position.y > HEIGHT) this.position.y = 0;
+    else if (this.position.y < 0) this.position.y = HEIGHT;
   }
 
-  align(boids){
+  align(boids) {
     let perceptionRadius = 60;
     let steering = new Victor();
-    let total =0;
-    for (let other of boids ){
-      let d= (this.position.distance(other.position));
-      if (other!==this && d<perceptionRadius){
-        steering.add(other.position);
+    let total = 0;
+    for (let other of boids) {
+      let d = this.position.distance(other.position);
+      if (other !== this && d < perceptionRadius) {
+        steering.add(other.velocity);
         total++;
       }
     }
-    if (total>0){
-      steering.x/=total;
-      steering.y/=total;
+
+    if (total > 0) {
+      steering.x /= total;
+      steering.y /= total;
+      setMagnitude(steering,this.maxSpeed);
       steering.subtract(this.velocity);
-      steering.limit(1,0.001);
+      limit(steering,this.maxForce);
+    
     }
-    return steering; 
-
+    return steering;
   }
-  calculateAcceleration (){
-    let alignment=this.align(flocks);
+  calculateAcceleration() {
+    let alignment = this.align(flocks);
 
-    this.acceleration.add(alignment); 
-  
-
+    this.acceleration.add(alignment);
   }
 
-  update (){
+  update() {
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
-    this.velocity.limit(this.maxSpeed,0.5);
-    this.acceleration=new Victor(0,0); 
+    this.acceleration = new Victor(0, 0);
   }
 
   draw() {
@@ -81,19 +79,36 @@ class Boid {
   }
 }
 
-for (let i=0;i<40;i++){
+for (let i = 0; i < 40; i++) {
   let temp = new Boid();
   flocks.push(temp);
 }
 
-function loop (){
-  ctx.clearRect(0,0,WIDTH,HEIGHT);
-  for (let boid of flocks){
-    boid.draw(); 
-    //boid.calculateAcceleration();
-    boid.update(); 
+function loop() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  for (let boid of flocks) {
+    boid.draw();
+    boid.calculateAcceleration();
+    boid.update();
     boid.edges();
   }
 }
 
-setInterval(loop,30);
+setInterval(loop, 30);
+
+
+
+
+function setMagnitude(v,m) {
+  let mag= Math.sqrt(v.x*v.x+v.y*v.y);
+  v.x*=m/mag;
+  v.y*=m/mag;
+}
+
+function limit(v,max){
+  let length=v.length()
+  if (length>max){
+    v.x=v.x*max/length;
+    v.y=v.y*max/length;
+  }
+}
