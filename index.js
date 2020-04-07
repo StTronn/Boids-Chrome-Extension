@@ -12,11 +12,11 @@ class Boid {
       let min = 2;
       let max = 3;
       let angle= Math.random()*2*Math.PI;
-      console.log(angle);
       let x = Math.cos(angle);
       let y = Math.sin(angle);
 
       this.velocity = new Victor(x, y);
+      setMagnitude(this.velocity,3);
     } else this.velocity = velocity;
 
     if (position === null) {
@@ -26,8 +26,8 @@ class Boid {
       this.position = new Victor(x, y);
     } else this.position = position;
     this.acceleration = new Victor(0, 0);
-    this.maxForce = 1;
-    this.maxSpeed = 1;
+    this.maxForce = 0.4;
+    this.maxSpeed = 3;
   }
 
   edges() {
@@ -43,7 +43,7 @@ class Boid {
     let steering = new Victor();
     let total = 0;
     for (let other of boids) {
-      let d = this.position.distance(other.position);
+      let d = (this.position.distance(other.position));
       if (other !== this && d < perceptionRadius) {
         steering.add(other.velocity);
         total++;
@@ -60,14 +60,69 @@ class Boid {
     }
     return steering;
   }
+
+  cohesion (){
+    let perceptionRadius=80;
+    let steering = new Victor();
+    let total = 0;
+
+    for (let other of flocks){
+      let d= Math.abs(this.position.distance(other.position));
+      if(other!==this && d<perceptionRadius){
+        steering.add(other.position);
+        total=total+1;
+      }
+    }
+
+    if (total>0){
+      steering.x /= total;
+      steering.y /= total;
+      steering.subtract(this.position);
+      setMagnitude(steering,this.maxSpeed);
+      steering.subtract(this.velocity);
+      limit(steering,this.maxForce);          
+    }    
+    return steering;
+  }  
+  separation (){
+    let perceptionRadius=60;
+    let steering = new Victor();
+    let total=0;
+    
+    for (let other of flocks){
+      let d= Math.abs(this.position.distance(other.position));
+      if (other!==this && d<perceptionRadius) {
+        let diff= this.position.clone();
+        diff.subtract(other.position);
+        diff.x/=d*d;
+        diff.y/=d*d;
+        steering.add(diff);
+        total++;
+      }
+    }
+    if (total>0){
+      steering.x /= total;
+      steering.y /= total;
+      setMagnitude(steering,this.maxSpeed);
+      steering.subtract(this.velocity);
+      limit(steering,0.5);          
+    }    
+    return steering;
+  }
+
   calculateAcceleration() {
     let alignment = this.align(flocks);
+    let cohesion= this.cohesion();
+    let separation= this.separation();
 
     this.acceleration.add(alignment);
+    this.acceleration.add(cohesion);
+    this.acceleration.add(separation);
   }
 
   update() {
     this.position.add(this.velocity);
+    limit(this.velocity,this.maxSpeed);
     this.velocity.add(this.acceleration);
     this.acceleration = new Victor(0, 0);
   }
@@ -75,11 +130,11 @@ class Boid {
   draw() {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 4, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.fill();
   }
 }
 
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 80; i++) {
   let temp = new Boid();
   flocks.push(temp);
 }
