@@ -11,9 +11,9 @@ class Boid {
     if (velocity === null) {
       let min = 2;
       let max = 3;
-      let angle= Math.random()*2*Math.PI;
-      let x = Math.cos(angle);
-      let y = Math.sin(angle);
+      this.angle= Math.random()*2*Math.PI;
+      let x = Math.cos(this.angle);
+      let y = Math.sin(this.angle);
 
       this.velocity = new Victor(x, y);
       setMagnitude(this.velocity,3);
@@ -89,7 +89,7 @@ class Boid {
     let steering = new Victor();
     let total=0;
     
-    for (let other of flocks){
+     for (let other of flocks){
       let d= Math.abs(this.position.distance(other.position));
       if (other!==this && d<perceptionRadius) {
         let diff= this.position.clone();
@@ -129,9 +129,27 @@ class Boid {
   }
 
   draw() {
+    let delta = 4;
+    let angle = Math.atan2(this.velocity.y,this.velocity.x)+Math.PI/2;
+    let p = {x:this.position.x,y:this.position.y};
+    //top vertex of triangle 
+    let v1= {x:p.x,y:p.y-delta};
+    let v2 = {x:p.x-delta,y:p.y+delta};
+    let v3 = {x:p.x+delta,y:p.y+delta};
+    v1=rotate(v1,p,angle);
+    v2=rotate(v2,p,angle);
+    v3=rotate(v3,p,angle);
+    
     ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, 4, 0, 2 * Math.PI);
+    ctx.lineTo(v2.x,v2.y);
+    ctx.lineTo(v3.x,v3.y);
+    ctx.lineTo(v1.x,v1.y);
+
+    // ctx.arc(this.position.x, this.position.y, 4, 0, 2 * Math.PI);
+    // ctx.fill();
+    ctx.closePath();
     ctx.fill();
+  
   }
 }
  
@@ -167,4 +185,21 @@ function limit(v,max){
     v.x=v.x*max/length;
     v.y=v.y*max/length;
   }
+}
+
+
+function rotate(point,pivot,angle) {
+  let s= Math.sin(angle);
+  let c= Math.cos(angle);
+
+  point.x -=pivot.x;
+  point.y -=pivot.y;
+
+  let xnew = point.x * c - point.y *s;
+  let ynew = point.x *s + point.y*c;
+
+  point.x=xnew+pivot.x;
+  point.y=ynew+pivot.y;
+  
+  return point;
 }
