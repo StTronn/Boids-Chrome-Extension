@@ -148,6 +148,7 @@ class Boid {
     // ctx.arc(this.position.x, this.position.y, 4, 0, 2 * Math.PI);
     // ctx.fill();
     ctx.closePath();
+    ctx.fillStyle="white";
     ctx.fill();
   
   }
@@ -160,6 +161,8 @@ for (let i = 0; i < 80; i++) {
 
 function loop() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   for (let boid of flocks) {
     boid.draw();
     boid.calculateAcceleration();
