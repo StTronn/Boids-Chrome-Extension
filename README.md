@@ -5,7 +5,7 @@
 ```
 git clone https://github.com/StTronn/Flock-Simulation.git
 ```
-go to `chrom://extensions`
+go to `chrome://extensions`
 
 select Load Unpacked and select the folder you cloned :).
 
