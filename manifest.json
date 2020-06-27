@@ -2,6 +2,9 @@
   "manifest_version": 2,
   "name": "Boids Extension",
   "version": "0.1",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
   "chrome_url_overrides": {
     "newtab": "index.html"
   }
